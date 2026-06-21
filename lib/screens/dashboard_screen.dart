@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../data/finance_repository.dart';
 import '../utils/formatting.dart';
+import '../widgets/app_logo.dart';
 import '../widgets/category_progress_tile.dart';
 import '../widgets/month_selector.dart';
 import 'add_edit_item_screen.dart';
@@ -16,12 +17,20 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final repo = context.watch<FinanceRepository>();
+    final theme = Theme.of(context);
     final progress = repo.progressForActiveMonth();
     final hasCategories = progress.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('fintr'),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppLogo(size: 26),
+            const SizedBox(width: 10),
+            Text('fintr', style: theme.textTheme.titleLarge),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.category_outlined),
