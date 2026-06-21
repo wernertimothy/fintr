@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/finance_repository.dart';
 import '../models/category.dart';
 import '../utils/formatting.dart';
+import '../widgets/swipe_backgrounds.dart';
 import 'add_edit_category_screen.dart';
 
 class CategoriesScreen extends StatelessWidget {
@@ -23,27 +24,31 @@ class CategoriesScreen extends StatelessWidget {
               separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final c = categories[index];
-                return ListTile(
-                  leading: Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: c.color,
-                      shape: BoxShape.circle,
+                return Dismissible(
+                  key: ValueKey(c.id),
+                  background: editSwipeBackground(context),
+                  secondaryBackground: deleteSwipeBackground(context),
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.startToEnd) {
+                      _editCategory(context, c);
+                      return false;
+                    }
+                    return _confirmDelete(context, c);
+                  },
+                  onDismissed: (_) => repo.deleteCategory(c.id),
+                  child: ListTile(
+                    leading: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: c.color,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  title: Text(c.name),
-                  subtitle:
-                      Text('Limit ${formatMoney(c.monthlyLimit)} / month'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    tooltip: 'Delete',
-                    onPressed: () => _confirmDelete(context, repo, c),
-                  ),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => AddEditCategoryScreen(existing: c),
-                    ),
+                    title: Text(c.name),
+                    subtitle:
+                        Text('Limit ${formatMoney(c.monthlyLimit)} / month'),
+                    onTap: () => _editCategory(context, c),
                   ),
                 );
               },
@@ -58,8 +63,16 @@ class CategoriesScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _confirmDelete(
-      BuildContext context, FinanceRepository repo, Category category) async {
+  void _editCategory(BuildContext context, Category category) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddEditCategoryScreen(existing: category),
+      ),
+    );
+  }
+
+  /// Shows the destructive-delete confirmation. Returns true if confirmed.
+  Future<bool> _confirmDelete(BuildContext context, Category category) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -80,8 +93,6 @@ class CategoriesScreen extends StatelessWidget {
         ],
       ),
     );
-    if (confirmed == true) {
-      await repo.deleteCategory(category.id);
-    }
+    return confirmed ?? false;
   }
 }

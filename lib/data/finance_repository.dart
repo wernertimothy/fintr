@@ -198,6 +198,14 @@ class FinanceRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Re-adds a previously deleted item exactly as it was (used for undo).
+  Future<void> restoreItem(ExpenseItem item) async {
+    if (_items.any((i) => i.id == item.id)) return;
+    _items = [..._items, item];
+    await _persist();
+    notifyListeners();
+  }
+
   /// Items for a given month, newest first.
   List<ExpenseItem> itemsForMonth(String month) {
     final result = _items.where((i) => i.month == month).toList();

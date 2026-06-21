@@ -80,6 +80,25 @@ void main() {
     expect(storage.saveCount, before + 1);
   });
 
+  test('deleteItem then restoreItem brings the entry back unchanged',
+      () async {
+    final repo = FinanceRepository(FakeStorage());
+    await repo.init();
+    final food = repo.categories.first;
+    final item =
+        await repo.addItem(name: 'Lunch', amount: 12, categoryId: food.id);
+
+    await repo.deleteItem(item.id);
+    expect(repo.items, isEmpty);
+
+    await repo.restoreItem(item);
+    expect(repo.items.single, item);
+
+    // Restoring again is a no-op (no duplicates).
+    await repo.restoreItem(item);
+    expect(repo.items.length, 1);
+  });
+
   test('theme mode defaults to system and persists across reload', () async {
     final storage = FakeStorage();
     final repo = FinanceRepository(storage);

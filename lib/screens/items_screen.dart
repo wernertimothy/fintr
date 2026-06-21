@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/finance_repository.dart';
+import '../models/expense_item.dart';
 import '../utils/formatting.dart';
+import '../widgets/swipe_backgrounds.dart';
 import 'add_edit_item_screen.dart';
 
-/// Expenses for one category in the active month, with swipe-to-delete and
-/// tap-to-edit.
+/// Expenses for one category in the active month. Swipe right to edit, swipe
+/// left to delete (with undo).
 class ItemsScreen extends StatelessWidget {
   const ItemsScreen({super.key, required this.categoryId});
 
@@ -47,29 +49,49 @@ class ItemsScreen extends StatelessWidget {
                 final item = items[index];
                 return Dismissible(
                   key: ValueKey(item.id),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Theme.of(context).colorScheme.errorContainer,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(Icons.delete),
-                  ),
-                  onDismissed: (_) => repo.deleteItem(item.id),
+                  background: editSwipeBackground(context),
+                  secondaryBackground: deleteSwipeBackground(context),
+                  confirmDismiss: (direction) async {
+                    if (direction == DismissDirection.startToEnd) {
+                      _editItem(context, item);
+                      return false;
+                    }
+                    return true;
+                  },
+                  onDismissed: (_) => _deleteItem(context, repo, item),
                   child: ListTile(
                     title: Text(item.name),
                     trailing: Text(
                       formatMoney(item.amount),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => AddEditItemScreen(existing: item),
-                      ),
-                    ),
+                    onTap: () => _editItem(context, item),
                   ),
                 );
               },
             ),
     );
+  }
+
+  void _editItem(BuildContext context, ExpenseItem item) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => AddEditItemScreen(existing: item)),
+    );
+  }
+
+  void _deleteItem(
+      BuildContext context, FinanceRepository repo, ExpenseItem item) {
+    repo.deleteItem(item.id);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('Deleted "${item.name}"'),
+          action: SnackBarAction(
+            label: 'Undo',
+            onPressed: () => repo.restoreItem(item),
+          ),
+        ),
+      );
   }
 }
