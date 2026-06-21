@@ -4,9 +4,7 @@ import 'package:provider/provider.dart';
 import '../data/finance_repository.dart';
 import '../models/category.dart';
 
-/// Curated palette and icon set so the picker stays simple and the icons are
-/// referenced as constants (keeps them through icon tree-shaking on release
-/// builds).
+/// Curated palette so the color picker stays simple.
 const List<Color> _palette = [
   Colors.red,
   Colors.pink,
@@ -26,27 +24,6 @@ const List<Color> _palette = [
   Colors.blueGrey,
 ];
 
-const List<IconData> _icons = [
-  Icons.restaurant,
-  Icons.shopping_cart,
-  Icons.directions_bus,
-  Icons.directions_car,
-  Icons.home,
-  Icons.bolt,
-  Icons.local_activity,
-  Icons.sports_esports,
-  Icons.fitness_center,
-  Icons.medical_services,
-  Icons.school,
-  Icons.pets,
-  Icons.flight,
-  Icons.checkroom,
-  Icons.coffee,
-  Icons.savings,
-  Icons.phone_android,
-  Icons.subscriptions,
-];
-
 class AddEditCategoryScreen extends StatefulWidget {
   const AddEditCategoryScreen({super.key, this.existing});
 
@@ -61,7 +38,6 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _limitController;
   late int _colorValue;
-  late int _iconCodePoint;
 
   bool get _isEditing => widget.existing != null;
 
@@ -74,7 +50,6 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
       text: e != null ? e.monthlyLimit.toString() : '',
     );
     _colorValue = e?.colorValue ?? _palette.first.toARGB32();
-    _iconCodePoint = e?.iconCodePoint ?? _icons.first.codePoint;
   }
 
   @override
@@ -98,14 +73,12 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
         name: name,
         monthlyLimit: limit,
         colorValue: _colorValue,
-        iconCodePoint: _iconCodePoint,
       ));
     } else {
       await repo.addCategory(
         name: name,
         monthlyLimit: limit,
         colorValue: _colorValue,
-        iconCodePoint: _iconCodePoint,
       );
     }
     if (mounted) Navigator.of(context).pop();
@@ -113,8 +86,6 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedColor = Color(_colorValue);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit category' : 'New category'),
@@ -168,23 +139,6 @@ class _AddEditCategoryScreenState extends State<AddEditCategoryScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            Text('Icon', style: Theme.of(context).textTheme.labelLarge),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                for (final icon in _icons)
-                  _IconButton(
-                    icon: icon,
-                    color: selectedColor,
-                    selected: icon.codePoint == _iconCodePoint,
-                    onTap: () =>
-                        setState(() => _iconCodePoint = icon.codePoint),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _save,
               icon: const Icon(Icons.check),
@@ -228,42 +182,6 @@ class _SwatchButton extends StatelessWidget {
         child: selected
             ? const Icon(Icons.check, color: Colors.white, size: 20)
             : null,
-      ),
-    );
-  }
-}
-
-class _IconButton extends StatelessWidget {
-  const _IconButton({
-    required this.icon,
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: selected
-              ? color.withValues(alpha: 0.2)
-              : Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? color : Colors.transparent,
-            width: 2,
-          ),
-        ),
-        child: Icon(icon, color: selected ? color : null, size: 22),
       ),
     );
   }

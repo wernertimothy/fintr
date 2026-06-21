@@ -43,10 +43,24 @@ class FinanceRepository extends ChangeNotifier {
   List<Category> _categories = [];
   List<ExpenseItem> _items = [];
   late String _activeMonth = monthKey(DateTime.now());
+  ThemeMode _themeMode = ThemeMode.system;
 
   List<Category> get categories => List.unmodifiable(_categories);
   List<ExpenseItem> get items => List.unmodifiable(_items);
   String get activeMonth => _activeMonth;
+  ThemeMode get themeMode => _themeMode;
+
+  static ThemeMode _themeModeFromString(String value) => switch (value) {
+        'light' => ThemeMode.light,
+        'dark' => ThemeMode.dark,
+        _ => ThemeMode.system,
+      };
+
+  static String _themeModeToString(ThemeMode mode) => switch (mode) {
+        ThemeMode.light => 'light',
+        ThemeMode.dark => 'dark',
+        ThemeMode.system => 'system',
+      };
 
   /// `YYYY-MM` key for a date.
   static String monthKey(DateTime date) =>
@@ -63,6 +77,7 @@ class FinanceRepository extends ChangeNotifier {
     final data = await _storage.load();
     _categories = data.categories;
     _items = data.items;
+    _themeMode = _themeModeFromString(data.themeMode);
     if (data.isEmpty) {
       _categories = _seedCategories();
       await _persist();
@@ -71,8 +86,21 @@ class FinanceRepository extends ChangeNotifier {
   }
 
   Future<void> _persist() => _storage.save(
-        AppData(categories: _categories, items: _items),
+        AppData(
+          categories: _categories,
+          items: _items,
+          themeMode: _themeModeToString(_themeMode),
+        ),
       );
+
+  // --- appearance ----------------------------------------------------------
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (mode == _themeMode) return;
+    _themeMode = mode;
+    await _persist();
+    notifyListeners();
+  }
 
   // --- month navigation ----------------------------------------------------
 
@@ -98,14 +126,12 @@ class FinanceRepository extends ChangeNotifier {
     required String name,
     required double monthlyLimit,
     required int colorValue,
-    required int iconCodePoint,
   }) async {
     final category = Category(
       id: _uuid.v4(),
       name: name,
       monthlyLimit: monthlyLimit,
       colorValue: colorValue,
-      iconCodePoint: iconCodePoint,
     );
     _categories = [..._categories, category];
     await _persist();
@@ -224,7 +250,11 @@ class FinanceRepository extends ChangeNotifier {
   /// dataset (atomic write — tmp + rename) and returns it. Stays entirely
   /// within the app's local folder; no OS share sheet.
   Future<File> exportToFile(Directory dir) async {
-    final data = AppData(categories: _categories, items: _items);
+    final data = AppData(
+      categories: _categories,
+      items: _items,
+      themeMode: _themeModeToString(_themeMode),
+    );
     final file = backupFile(dir);
     final tmp = File('${file.path}.tmp');
     await tmp.writeAsString(jsonEncode(data.toJson()), flush: true);
@@ -242,6 +272,7 @@ class FinanceRepository extends ChangeNotifier {
     final data = AppData.fromJson(decoded);
     _categories = data.categories;
     _items = data.items;
+    _themeMode = _themeModeFromString(data.themeMode);
     await _persist();
     notifyListeners();
   }
@@ -254,21 +285,18 @@ class FinanceRepository extends ChangeNotifier {
           name: 'Food',
           monthlyLimit: 1000,
           colorValue: Colors.green.toARGB32(),
-          iconCodePoint: Icons.restaurant.codePoint,
         ),
         Category(
           id: _uuid.v4(),
           name: 'Transport',
           monthlyLimit: 400,
           colorValue: Colors.blue.toARGB32(),
-          iconCodePoint: Icons.directions_bus.codePoint,
         ),
         Category(
           id: _uuid.v4(),
           name: 'Leisure',
           monthlyLimit: 300,
           colorValue: Colors.purple.toARGB32(),
-          iconCodePoint: Icons.local_activity.codePoint,
         ),
       ];
 }

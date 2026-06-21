@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'data/finance_repository.dart';
 import 'data/json_file_storage.dart';
 import 'screens/dashboard_screen.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,13 +22,14 @@ class FintrApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: repository,
-      child: MaterialApp(
-        title: 'Fintr',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-          useMaterial3: true,
+      child: Consumer<FinanceRepository>(
+        builder: (context, repo, _) => MaterialApp(
+          title: 'Fintr',
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: repo.themeMode,
+          home: const DashboardScreen(),
         ),
-        home: const DashboardScreen(),
       ),
     );
   }

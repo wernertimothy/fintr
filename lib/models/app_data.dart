@@ -10,6 +10,7 @@ class AppData {
     this.version = currentVersion,
     List<Category>? categories,
     List<ExpenseItem>? items,
+    this.themeMode = 'system',
   })  : categories = categories ?? [],
         items = items ?? [];
 
@@ -19,12 +20,16 @@ class AppData {
   final List<Category> categories;
   final List<ExpenseItem> items;
 
+  /// User's theme preference: `system`, `light`, or `dark`.
+  final String themeMode;
+
   bool get isEmpty => categories.isEmpty && items.isEmpty;
 
   Map<String, dynamic> toJson() => {
         'version': version,
         'categories': categories.map((c) => c.toJson()).toList(),
         'items': items.map((i) => i.toJson()).toList(),
+        'themeMode': themeMode,
       };
 
   factory AppData.fromJson(Map<String, dynamic> json) => AppData(
@@ -35,5 +40,6 @@ class AppData {
         items: (json['items'] as List<dynamic>? ?? [])
             .map((e) => ExpenseItem.fromJson(e as Map<String, dynamic>))
             .toList(),
+        themeMode: json['themeMode'] as String? ?? 'system',
       );
 }

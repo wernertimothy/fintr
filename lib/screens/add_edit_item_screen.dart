@@ -119,7 +119,14 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                     value: c.id,
                     child: Row(
                       children: [
-                        Icon(c.icon, color: c.color, size: 20),
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: c.color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Text(c.name),
                       ],

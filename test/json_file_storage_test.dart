@@ -31,7 +31,6 @@ void main() {
           name: 'Food',
           monthlyLimit: 500,
           colorValue: 0xFF00FF00,
-          iconCodePoint: 0xe000,
         ),
       ],
     );

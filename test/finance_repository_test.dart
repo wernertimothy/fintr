@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fintr/data/finance_repository.dart';
 import 'package:fintr/data/storage.dart';
 import 'package:fintr/models/app_data.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// In-memory [Storage] so tests avoid path_provider / the filesystem.
@@ -77,6 +78,21 @@ void main() {
     await repo.addItem(
         name: 'X', amount: 1, categoryId: repo.categories.first.id);
     expect(storage.saveCount, before + 1);
+  });
+
+  test('theme mode defaults to system and persists across reload', () async {
+    final storage = FakeStorage();
+    final repo = FinanceRepository(storage);
+    await repo.init();
+    expect(repo.themeMode, ThemeMode.system);
+
+    await repo.setThemeMode(ThemeMode.dark);
+    expect(repo.themeMode, ThemeMode.dark);
+
+    // A fresh repo over the same storage should load the saved preference.
+    final reloaded = FinanceRepository(storage);
+    await reloaded.init();
+    expect(reloaded.themeMode, ThemeMode.dark);
   });
 
   test('export then import restores data from the local backup file',

@@ -21,7 +21,7 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fintr'),
+        title: const Text('fintr'),
         actions: [
           IconButton(
             icon: const Icon(Icons.category_outlined),

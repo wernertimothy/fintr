@@ -95,7 +95,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         children: [
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text('Backup (stored in the app folder)'),
+            child: Text(
+              'Appearance',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const _ThemeModeSelector(),
+          const Divider(height: 24),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Text(
+              'Backup (stored in the app folder)',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.save_outlined),
@@ -120,6 +132,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: _import,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// System / Light / Dark theme picker wired to the repository.
+class _ThemeModeSelector extends StatelessWidget {
+  const _ThemeModeSelector();
+
+  @override
+  Widget build(BuildContext context) {
+    final repo = context.watch<FinanceRepository>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: SegmentedButton<ThemeMode>(
+        segments: const [
+          ButtonSegment(
+            value: ThemeMode.system,
+            label: Text('System'),
+            icon: Icon(Icons.brightness_auto_outlined),
+          ),
+          ButtonSegment(
+            value: ThemeMode.light,
+            label: Text('Light'),
+            icon: Icon(Icons.light_mode_outlined),
+          ),
+          ButtonSegment(
+            value: ThemeMode.dark,
+            label: Text('Dark'),
+            icon: Icon(Icons.dark_mode_outlined),
+          ),
+        ],
+        selected: {repo.themeMode},
+        showSelectedIcon: false,
+        onSelectionChanged: (selection) =>
+            repo.setThemeMode(selection.first),
       ),
     );
   }

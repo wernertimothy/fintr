@@ -41,8 +41,6 @@ class CategoryProgressTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(category.icon, color: category.color, size: 22),
-                const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     category.name,
@@ -50,11 +48,6 @@ class CategoryProgressTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (over) ...[
-                  Icon(Icons.warning_amber_rounded,
-                      color: theme.colorScheme.error, size: 18),
-                  const SizedBox(width: 4),
-                ],
                 Text(
                   '${formatMoney(progress.spent)} / ${formatMoney(progress.limit)}',
                   style: theme.textTheme.bodyMedium?.copyWith(

@@ -10,7 +10,6 @@ void main() {
       name: 'Food',
       monthlyLimit: 1000,
       colorValue: 0xFF00FF00,
-      iconCodePoint: 0xe000,
     );
     final restored = Category.fromJson(category.toJson());
     expect(restored, category);
@@ -37,7 +36,6 @@ void main() {
           name: 'Food',
           monthlyLimit: 1000,
           colorValue: 0xFF00FF00,
-          iconCodePoint: 0xe000,
         ),
       ],
       items: [
